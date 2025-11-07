@@ -160,42 +160,30 @@ const playPrevSong = () => {
 };
 
 const shuffle = () => {
-    const songs = userData?.songs;
+    const songs = [...userData?.songs];
     const currentSong = userData?.currentSong;
     if (!songs || songs.length === 0) return;
-    const wasPlaying = !audio.paused;
-    const lastTime = audio.currentTime;
 
     for (let i = songs.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [songs[i], songs[j] = songs[j], songs[i]];
+        [songs[i], songs[j]] = [songs[j], songs[i]];
     }
 
     if (currentSong) {
-        const currentIndex = getCurrentSongIndex();
+        const currentIndex = songs.findIndex(s => s.id === currentSong.id);
 
         if (currentIndex > -1) {
             const current = songs.splice(currentIndex, 1)[0];
             songs.unshift(current);
+            userData.currentSong = current;
         }
     }
 
+    userData.songs = songs;
     renderSongs(songs);
     highlightCurrentSong();
     setPlayerDisplay();
     setPlayButtonAccessibleText();
-
-    if (currentSong) {
-        audio.src = currentSong.src;
-        audio.title = currentSong.title;
-        audio.currentTime = lastTime;
-
-        if (wasPlaying) {
-            audio.play();
-        } else {
-            audio.pause();
-        }
-    }
 };
 
 const deleteSong = (id) => {
